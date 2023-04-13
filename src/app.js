@@ -16,26 +16,36 @@ dotenv.config();
 //---Configurações Banco de Dados---//
 let db;
 const mongoClient = new MongoClient(process.env.DATABASE_URL)
+
 MongoClient.connect()
     .then(() => db = MongoClient.db())
     .catch((err) => console.log(err.message))
 
 //---Endpoints---//
-app.post("/participants", (req, res) => {
+app.post("/participants", async (req, res) => {
     const { name } = req.body;
 
-    if (!name) {
+    /// - Validação Joi ChatGpt - //
+    const schema = Joi.object({
+        name: Joi.string().min(1).required(),
+    });
+
+    const { error } = schema.validate({ name });
+    /// - FIM Joi - ///
+
+    if (error) {
         return res.status(422).send("Todos os campos são obrigatórios!")
     }
     // Validações com a Joi
     // Impedir cadastro repetido
 
     const newName = { name, lastStatus: Date.now() };
-    db.collection("participants").insertOne(newName);
+    await db.collection("participants").insertOne(newName);
 
-    const newMsg = { from: name, to: 'Todos', text: 'entra na sala...', type: 'status', time: 'HH:mm:ss' }
-    db.collection("messages").insertOne(newMsg);
+    const newMsg = { from: name, to: 'Todos', text: 'entra na sala...', type: 'status', time: dayjs().format ('HH:mm:ss') }
+    await db.collection("messages").insertOne(newMsg);
 
+    return res.status(201)
 })
 
 app.get("/participants", (req, res) => {
@@ -66,7 +76,7 @@ app.post("/messages", (req, res) => {
 })
 
 // voltar a codar daqui 
-app.get("/messages", (req, res) => {})
+app.get("/messages", (req, res) => { })
 
 
 
