@@ -15,7 +15,7 @@ dotenv.config();
 
 //---Configurações Banco de Dados---//
 let db;
-const mongoClient = new MongoClient(process.env.DATABASE_URL)
+const mongoClient = new MongoClient(process.env.DATABASE_URL);
 
 MongoClient.connect()
     .then(() => db = MongoClient.db())
