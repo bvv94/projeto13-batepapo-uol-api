@@ -41,15 +41,15 @@ app.post("/participants", (req, res) => {
 app.get("/participants", (req, res) => {
     db.collection("participants").find().toArray()
         .then((participants) => res.status().send(participants))
-        .catch((err) => res.status(500).send(err.message)) //---mandar array vazio aqui?---//
+        .catch((err) => res.status(422).send(err.message)) //---mandar array vazio aqui?---//
 })
 
 app.post("/messages", (req, res) => {
-    const { to, text, type } = req.body
-    //---pegar Header---//
+    const { to, text, type } = req.body;
+    const { User } = req.headers;
 
     const newMsg = {
-        // from: User, pegar do Header
+        from: User,
         to,
         text,
         type,
@@ -57,16 +57,16 @@ app.post("/messages", (req, res) => {
     }
     if ((to || text !== '') || (type !== 'message') || (type !== 'private_message')) {
         //if () { Validação do from como participante existente
-            db.collection("messages").insertOne(newMsg)
-                .then(res.status(201)
-                    )
-                .catch(res.status(422))
-      //}
+        db.collection("messages").insertOne(newMsg)
+            .then(res.status(201)
+            )
+            .catch(res.status(422))
+        //}
     }
 })
 
-// voltar a codar daqui app.get("/messages", (req, res) => {})
-
+// voltar a codar daqui 
+app.get("/messages", (req, res) => {})
 
 
 
