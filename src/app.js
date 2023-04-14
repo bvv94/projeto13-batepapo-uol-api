@@ -3,7 +3,7 @@ import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import dayjs from "dayjs";
-import Joi from "Joi";
+import Joi from "joi";
 
 //---Criação do Servidor---//
 const app = express();
@@ -18,7 +18,7 @@ dotenv.config();
 let db;
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
 
-MongoClient.connect()
+mongoClient.connect()
     .then(() => db = mongoClient.db())
     .catch((err) => console.log(err.message))
 
