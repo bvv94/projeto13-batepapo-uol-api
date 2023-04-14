@@ -18,14 +18,14 @@ let db;
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
 
 MongoClient.connect()
-    .then(() => db = MongoClient.db())
+    .then(() => db = mongoClient.db())
     .catch((err) => console.log(err.message))
 
 //---Endpoints---//
 app.post("/participants", async (req, res) => {
     const { name } = req.body;
 
-    /// - Validação Joi ChatGpt - //
+    /// - Validação Joi  - //
     const schema = Joi.object({
         name: Joi.string().min(1).required(),
     });
