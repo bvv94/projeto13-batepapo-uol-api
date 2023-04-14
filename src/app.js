@@ -3,6 +3,7 @@ import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import dayjs from "dayjs";
+import Joi from "Joi";
 
 //---Criação do Servidor---//
 const app = express();
@@ -45,12 +46,12 @@ app.post("/participants", async (req, res) => {
     const newMsg = { from: name, to: 'Todos', text: 'entra na sala...', type: 'status', time: dayjs().format ('HH:mm:ss') }
     await db.collection("messages").insertOne(newMsg);
 
-    return res.status(201)
+    return res.sendStatus(201)
 })
 
 app.get("/participants", (req, res) => {
     db.collection("participants").find().toArray()
-        .then((participants) => res.status().send(participants))
+        .then((participants) => res.status(201).send(participants))
         .catch((err) => res.status(422).send(err.message)) //---mandar array vazio aqui?---//
 })
 
@@ -68,9 +69,8 @@ app.post("/messages", (req, res) => {
     if ((to || text !== '') || (type !== 'message') || (type !== 'private_message')) {
         //if () { Validação do from como participante existente
         db.collection("messages").insertOne(newMsg)
-            .then(res.status(201)
-            )
-            .catch(res.status(422))
+            .then(res.sendStatus(201)            )
+            .catch(res.sendStatus(422))
         //}
     }
 })
