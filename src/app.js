@@ -24,34 +24,39 @@ mongoClient.connect()
 
 //---Endpoints---//
 app.post("/participants", async (req, res) => {
-    const { name } = req.body;
+    try {
+        const { name } = req.body;
 
-    /// - Validação Joi  - //
-    const schema = Joi.object({
-        name: Joi.string().min(1).required(),
-    });
+        /// - Validação Joi  - //
+        const schema = Joi.object({
+            name: Joi.string().min(1).required(),
+        });
 
-    const { error } = schema.validate({ name });
-    /// - FIM Joi - ///
+        const { error } = schema.validate({ name });
+        /// - FIM Joi - ///
 
-    if (error) {
-        return res.status(422).send("Todos os campos são obrigatórios!")
+        if (error) {
+            return res.status(422).send("Todos os campos são obrigatórios!")
+        }
+        // Validações com a Joi FIM //
+        // Impedir cadastro repetido
+
+        const exist = await db.collection('participants').findOne({ name })
+        if (exist) {
+            return res.status(409).send("Usuário já cadastrado")
+        }
+
+        const newName = { name, lastStatus: Date.now() };
+        await db.collection("participants").insertOne(newName);
+
+        const newMsg = { from: name, to: 'Todos', text: 'entra na sala...', type: 'status', time: dayjs().format('HH:mm:ss') }
+        await db.collection("messages").insertOne(newMsg);
+
+        return res.sendStatus(201)
     }
-    // Validações com a Joi FIM //
-    // Impedir cadastro repetido
-
-    const exist = await db.collection('participants').findOne({name})
-    if(exist){
-        return res.status(409).send("Usuário já cadastrado")
+    catch (error) {
+        res.status(422)
     }
-
-    const newName = { name, lastStatus: Date.now() };
-    await db.collection("participants").insertOne(newName);
-
-    const newMsg = { from: name, to: 'Todos', text: 'entra na sala...', type: 'status', time: dayjs().format ('HH:mm:ss') }
-    await db.collection("messages").insertOne(newMsg);
-
-    return res.sendStatus(201)
 })
 
 app.get("/participants", (req, res) => {
@@ -69,19 +74,48 @@ app.post("/messages", (req, res) => {
         to,
         text,
         type,
-        time: 'HH:mm:ss' // dayjs
+        time: dayjs().format('HH:mm:ss') // dayjs
     }
+
+    const schema = Joi.object({
+        to: Joi.string().min(1).required(),
+        text: Joi.string().min(1).required(),
+        type: Joi.string().valid('message', 'private_message').required,
+    });
+
+    const { error } = schema.validate(req.body)
+    if (error) {
+        return res.status(422).send(error.details[0].message)
+    }
+
     if ((to || text !== '') || (type !== 'message') || (type !== 'private_message')) {
         //if () { Validação do from como participante existente
         db.collection("messages").insertOne(newMsg)
-            .then(res.sendStatus(201)            )
+            .then(res.sendStatus(201))
             .catch(res.sendStatus(422))
         //}
     }
 })
 
 // voltar a codar daqui 
-app.get("/messages", (req, res) => { })
+app.get("/messages", async (req, res) => {
+
+    // try {
+    //     const User = req.headers['user'];
+    //     const messages = await db.collection('messages').find({
+    //         $or: [
+    //             { from: 'Todos' },
+    //             { to: user },
+    //             { from: user }
+    //         ]
+    //     }).toArray();
+
+    //     res.send(messages);
+    // }
+    // catch (err){
+
+    // }
+})
 
 
 
