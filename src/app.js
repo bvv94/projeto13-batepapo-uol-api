@@ -37,8 +37,13 @@ app.post("/participants", async (req, res) => {
     if (error) {
         return res.status(422).send("Todos os campos são obrigatórios!")
     }
-    // Validações com a Joi
+    // Validações com a Joi FIM //
     // Impedir cadastro repetido
+
+    const exist = await db.collection('participants').findOne({name})
+    if(exist){
+        return res.status(409).send("Usuário já cadastrado")
+    }
 
     const newName = { name, lastStatus: Date.now() };
     await db.collection("participants").insertOne(newName);
