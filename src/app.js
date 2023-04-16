@@ -80,7 +80,7 @@ app.post("/messages", (req, res) => {
     const schema = Joi.object({
         to: Joi.string().min(1).required(),
         text: Joi.string().min(1).required(),
-        type: Joi.string().valid('message', 'private_message').required,
+        type: Joi.string().valid('message', 'private_message').required(),
     });
 
     const { error } = schema.validate(req.body)
@@ -91,8 +91,8 @@ app.post("/messages", (req, res) => {
     if ((to || text !== '') || (type !== 'message') || (type !== 'private_message')) {
         //if () { Validação do from como participante existente
         db.collection("messages").insertOne(newMsg)
-            .then(res.sendStatus(201))
-            .catch(res.sendStatus(422))
+            .then(res.status(201))
+            .catch(res.status(422))
         //}
     }
 })
