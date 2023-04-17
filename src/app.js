@@ -65,17 +65,9 @@ app.get("/participants", (req, res) => {
         .catch((err) => res.status(422).send(err.message)) //---mandar array vazio aqui?---//
 })
 
-app.post("/messages", (req, res) => {
+app.post("/messages", async (req, res) => {
     const { to, text, type } = req.body;
     const { User } = req.headers;
-
-    const newMsg = {
-        from: User,
-        to,
-        text,
-        type,
-        time: dayjs().format('HH:mm:ss') // dayjs
-    }
 
     const schema = Joi.object({
         to: Joi.string().min(1).required(),
@@ -88,13 +80,19 @@ app.post("/messages", (req, res) => {
         return res.status(422).send(error.details[0].message)
     }
 
-    if ((to || text !== '') || (type !== 'message') || (type !== 'private_message')) {
-        //if () { Validação do from como participante existente
-        db.collection("messages").insertOne(newMsg)
-            .then(res.status(201))
-            .catch(res.status(422))
-        //}
+    const participant = await db.collection('participants').findOne({ name: User })
+    if (!participant) {
+        return res.status(422)
     }
+
+    const newMsg = {
+        from: User,
+        to,
+        text,
+        type,
+        time: dayjs().format('HH:mm:ss') // dayjs
+    }
+    await db.collection("messages").insertOne(newMsg)
 })
 
 // voltar a codar daqui 
@@ -117,17 +115,20 @@ app.get("/messages", async (req, res) => {
     }
 })
 
-app.get("/status", (req, res) => {
+app.get("/status", async (req, res) => {
     const { User } = req.headers;
 
     if (!User) {
         return res.status(404)
     }
-    
-    const exist = db.collection('participants').findOne({ User })
-    if (exist) {
+
+    const exist = await db.collection('participants').findOne({ name: User })
+    if (!exist) {
         return res.status(404)
     }
+    await db.collection("participants").updateOne({ name: User }, { $set: { lastStatus: Date.now() } })
+
+    res.sendStatus(200)
 })
 
 
