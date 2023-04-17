@@ -100,21 +100,21 @@ app.post("/messages", (req, res) => {
 // voltar a codar daqui 
 app.get("/messages", async (req, res) => {
 
-    // try {
-    //     const User = req.headers['user'];
-    //     const messages = await db.collection('messages').find({
-    //         $or: [
-    //             { from: 'Todos' },
-    //             { to: user },
-    //             { from: user }
-    //         ]
-    //     }).toArray();
+    try {
+        const User = req.headers['user'];
+        const messages = await db.collection('messages').find({
+            $or: [
+                { from: 'Todos' },
+                { to: user },
+                { from: user }
+            ]
+        }).toArray();
 
-    //     res.send(messages);
-    // }
-    // catch (err){
+        res.send(messages);
+    }
+    catch (err){
 
-    // }
+    }
 })
 
 
