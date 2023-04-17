@@ -101,7 +101,7 @@ app.post("/messages", (req, res) => {
 app.get("/messages", async (req, res) => {
 
     try {
-        const User = req.headers['user'];
+        const { User } = req.headers;
         const messages = await db.collection('messages').find({
             $or: [
                 { from: 'Todos' },
@@ -112,12 +112,23 @@ app.get("/messages", async (req, res) => {
 
         res.send(messages);
     }
-    catch (err){
+    catch (err) {
 
     }
 })
 
+app.get("/status", (req, res) => {
+    const { User } = req.headers;
 
+    if (!User) {
+        return res.status(404)
+    }
+    
+    const exist = db.collection('participants').findOne({ User })
+    if (exist) {
+        return res.status(404)
+    }
+})
 
 
 
