@@ -96,23 +96,28 @@ app.post("/messages", async (req, res) => {
 })
 
 // voltar a codar daqui 
-app.get("/messages", async (req, res) => {
+app.get("/messages", (req, res) => {
+    const { User } = req.headers;
+    const limit = parseInt(req.query.limit)
 
-    try {
-        const { User } = req.headers;
-        const messages = await db.collection('messages').find({
-            $or: [
-                { from: 'Todos' },
-                { to: User },
-                { from: User }
-            ]
-        }).toArray();
-
-        res.send(messages);
+    if (isNaN(limit) || limit <= 0) {
+        return res.status(422)
     }
-    catch (err) {
 
+    const query = {
+        $or: [
+            { to: User },
+            { from: User },
+            { to: 'Todos' },
+            { to: { $exists: false } }
+        ]
     }
+    const options = { limit }
+    
+    db.collection('messages').find(query, options).toArray((err, result) =>{
+        if (err) throw err;
+        res.send(result);
+    })
 })
 
 app.get("/status", async (req, res) => {
